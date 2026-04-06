@@ -1,0 +1,7 @@
+bin/
+obj/
+_temp_*/
+*.user
+.vscode/
+# Keep settings.json template in source control but ignore runtime overwrites
+settings.json

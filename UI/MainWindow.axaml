@@ -1,0 +1,371 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:IoTHubUpdateUtility.UI"
+        x:Class="IoTHubUpdateUtility.UI.MainWindow"
+        Title="IoT Hub Update Utility"
+        Width="1400" Height="860"
+        MinWidth="1100" MinHeight="700"
+        Background="#1e1e1e">
+
+  <Window.Styles>
+    <Style Selector="Button">
+      <Setter Property="Background" Value="#0e639c"/>
+      <Setter Property="Foreground" Value="#ffffff"/>
+      <Setter Property="BorderBrush" Value="#0e639c"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="12,8"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.danger">
+      <Setter Property="Background" Value="#f44747"/>
+      <Setter Property="BorderBrush" Value="#f44747"/>
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1177bb"/>
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#f44747"/>
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="Background" Value="#3c3c3c"/>
+      <Setter Property="Foreground" Value="#cccccc"/>
+      <Setter Property="BorderBrush" Value="#3c3c3c"/>
+      <Setter Property="BorderThickness" Value="2"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Padding" Value="8,6"/>
+    </Style>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="#cccccc"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+    <Style Selector="ListBox">
+      <Setter Property="Background" Value="#1e1e1e"/>
+      <Setter Property="BorderBrush" Value="#3c3c3c"/>
+      <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="2,1"/>
+      <Setter Property="Margin" Value="0"/>
+    </Style>
+    <Style Selector="TreeView">
+      <Setter Property="Background" Value="#1e1e1e"/>
+      <Setter Property="BorderBrush" Value="#3c3c3c"/>
+      <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="Foreground" Value="#cccccc"/>
+    </Style>
+    <Style Selector="RadioButton">
+      <Setter Property="Foreground" Value="#cccccc"/>
+    </Style>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#cccccc"/>
+      <Setter Property="Background" Value="#1e1e1e"/>
+      <Setter Property="Padding" Value="10,6"/>
+      <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+    <Style Selector="TabItem:selected">
+      <Setter Property="Foreground" Value="#0e639c"/>
+      <Setter Property="Background" Value="#252526"/>
+    </Style>
+  </Window.Styles>
+
+  <TabControl Background="#1e1e1e">
+
+    <!-- HOME TAB -->
+    <TabItem Header="Home" Background="#1e1e1e">
+      <DockPanel>
+
+        <!-- BOTTOM: BUTTONS + LOG -->
+        <Border DockPanel.Dock="Bottom" Background="#1e1e1e" Padding="10,8" BorderBrush="#3c3c3c" BorderThickness="0,1,0,0">
+          <DockPanel>
+
+            <!-- Log terminal -->
+            <Border DockPanel.Dock="Bottom" BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="4" Margin="0,8,0,0" Height="180">
+              <ListBox ItemsSource="{Binding LogLines}"
+                       Background="#1e1e1e"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       x:Name="LogListBox">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Message}"
+                               FontFamily="Monospace"
+                               FontSize="12"
+                               Foreground="{Binding Foreground}"/>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Border>
+
+            <!-- Action buttons -->
+            <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="10" DockPanel.Dock="Top">
+              <Button Grid.Column="0" Content="Check upgrade criteria"      Click="OnCheckCriteria" HorizontalAlignment="Stretch"/>
+              <Button Grid.Column="1" Content="Stop services &amp; execute rules" Click="OnStopAndExecute" HorizontalAlignment="Stretch"/>
+              <Button Grid.Column="2" Content="Start system services"       Click="OnStartServices" HorizontalAlignment="Stretch"/>
+              <Button Grid.Column="3" Content="Refresh Folder Tree" Click="OnRefreshFolderTree" HorizontalAlignment="Stretch"/>
+              <Button Grid.Column="4" Content="Clear logs" Click="OnClearLogs" HorizontalAlignment="Stretch"/>
+            </Grid>
+          </DockPanel>
+        </Border>
+
+        <!-- MAIN CONTENT: three columns equal distribution -->
+        <Grid ColumnDefinitions="*,*,*" Margin="8" ColumnSpacing="8">
+
+          <!-- LEFT: Source -->
+          <DockPanel Grid.Column="0">
+            <!-- Header -->
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,150" ColumnSpacing="10" Margin="0,0,0,8">
+              <TextBox Grid.Column="0"
+                       Text="{Binding SourcePath}"
+                       Watermark="Compressed file or folder path…"
+                       HorizontalAlignment="Stretch"/>
+              <Button Grid.Column="1"
+                      Content="Select source"
+                      Click="OnSelectSource"
+                      Width="150"
+                      HorizontalAlignment="Stretch"/>
+            </Grid>
+
+            <!-- Extract button -->
+            <Border BorderBrush="#3c3c3c"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    MinHeight="420"
+                    VerticalAlignment="Stretch">
+              <TreeView ItemsSource="{Binding SourceTree}" Background="#252526">
+                <TreeView.ItemTemplate>
+                  <TreeDataTemplate ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="4"
+                                PointerPressed="OnSourceTreeNodePointerPressed">
+                      <TextBlock Text="{Binding Icon}" FontSize="12"/>
+                      <TextBlock Text="{Binding Name}" Foreground="#cccccc" FontSize="12"/>
+                    </StackPanel>
+                  </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+              </TreeView>
+            </Border>
+          </DockPanel>
+
+          <!-- CENTRE: Rules -->
+          <DockPanel Grid.Column="1">
+            <Grid DockPanel.Dock="Top" Height="32" Margin="0,0,0,8">
+              <TextBlock Text="Rules List:"
+                         FontWeight="SemiBold"
+                         Foreground="#006BB8"
+                         FontSize="13"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Rules ListBox -->
+            <Border DockPanel.Dock="Top" BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="4" Height="250">
+              <ListBox ItemsSource="{Binding Rules}"
+                       x:Name="RulesListBox"
+                       Background="#252526"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel Spacing="3" Margin="4">
+                      <TextBlock Text="{Binding Name}"      FontWeight="SemiBold" Foreground="#cccccc" FontSize="12"/>
+                      <TextBlock Text="{Binding Operation}" Foreground="#999"     FontSize="11"/>
+                      <TextBlock Text="{Binding SourceRelativePath, StringFormat='src: {0}'}"
+                                 Foreground="#777" FontSize="10"/>
+                      <TextBlock Text="{Binding DestinationRelativePath, StringFormat='dst: {0}'}"
+                                 Foreground="#777" FontSize="10"/>
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Border>
+
+            <!-- Rule actions -->
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,8,0,8">
+              <Button Content="New"    Click="OnNewRule"    Width="90" MinWidth="90"/>
+              <Button Content="Edit"   Click="OnEditRule"   Width="90" MinWidth="90"/>
+              <Button Content="Save"   Click="OnSaveRule"   Width="90" MinWidth="90"/>
+              <Button Content="Delete" Click="OnDeleteRule" Width="90" MinWidth="90"/>
+            </StackPanel>
+
+            <!-- Rule editor (simple inline form for selected rule) -->
+            <ScrollViewer>
+              <StackPanel Spacing="6" x:Name="RuleEditor" IsVisible="True" IsEnabled="False">
+                <TextBlock x:Name="RuleEditorHint" Text="Select a rule and click Edit, or click New." Foreground="#666" FontSize="11"/>
+                <TextBox x:Name="RuleNameBox"    Watermark="Name"                 LostFocus="OnRuleFieldChanged"/>
+                <TextBox x:Name="RuleSrcBox"
+                         Watermark="Source relative path"
+                         LostFocus="OnRuleFieldChanged"
+                         DragDrop.AllowDrop="True"
+                         DragDrop.DragOver="OnRuleSourcePathDragOver"
+                         DragDrop.Drop="OnRuleSourcePathDrop"/>
+                <TextBox x:Name="RuleDstBox"
+                         Watermark="Dest relative path"
+                         LostFocus="OnRuleFieldChanged"
+                         DragDrop.AllowDrop="True"
+                         DragDrop.DragOver="OnRuleDestinationPathDragOver"
+                         DragDrop.Drop="OnRuleDestinationPathDrop"/>
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                  <CheckBox x:Name="RulePermsCheckBox"
+                            Content="Apply"
+                            Checked="OnRulePermissionsChanged"
+                            Unchecked="OnRulePermissionsChanged"/>
+                  <TextBlock x:Name="RulePermsLabel"
+                             Text="{Binding Permissions}"
+                             VerticalAlignment="Center"
+                             Foreground="#999"/>
+                </StackPanel>
+                <ComboBox x:Name="RuleOpBox" Width="180" SelectionChanged="OnRuleOpChanged">
+                  <ComboBoxItem Content="RecursiveCopy"/>
+                  <ComboBoxItem Content="FilesOnly"/>
+                  <ComboBoxItem Content="ReplaceFile"/>
+                </ComboBox>
+              </StackPanel>
+            </ScrollViewer>
+          </DockPanel>
+
+          <!-- RIGHT: Destination -->
+          <DockPanel Grid.Column="2">
+            <!-- Header -->
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,150" ColumnSpacing="10" Margin="0,0,0,8">
+              <TextBox Grid.Column="0"
+                       Text="{Binding DestinationPath}"
+                       Watermark="/home/pi/"
+                       HorizontalAlignment="Stretch"/>
+              <Button Grid.Column="1"
+                      Content="Select destination"
+                      Click="OnSelectDestination"
+                      Width="150"
+                      HorizontalAlignment="Stretch"/>
+            </Grid>
+
+            <!-- Destination tree -->
+            <Border BorderBrush="#3c3c3c"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    MinHeight="420"
+                    VerticalAlignment="Stretch">
+              <TreeView ItemsSource="{Binding DestinationTree}" Background="#252526">
+                <TreeView.ItemTemplate>
+                  <TreeDataTemplate ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="4"
+                                PointerPressed="OnDestinationTreeNodePointerPressed">
+                      <TextBlock Text="{Binding Icon}" FontSize="12"/>
+                      <TextBlock Text="{Binding Name}" Foreground="#cccccc" FontSize="12"/>
+                    </StackPanel>
+                  </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+              </TreeView>
+            </Border>
+          </DockPanel>
+
+        </Grid>
+      </DockPanel>
+    </TabItem>
+
+    <!-- SETTINGS TAB -->
+    <TabItem Header="Settings" Background="#1e1e1e">
+      <ScrollViewer>
+        <StackPanel Spacing="20" Margin="20">
+
+          <!-- Upgrade Source Type -->
+          <Border BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,10" Background="#252526">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Upgrade Source Type" FontWeight="SemiBold" FontSize="12"/>
+              <RadioButton Content="compressed file" IsChecked="{Binding SourceType, Converter={x:Static local:SourceTypeToBoolConverter.CompressedFile}}"/>
+              <RadioButton Content="folder" IsChecked="{Binding SourceType, Converter={x:Static local:SourceTypeToBoolConverter.Folder}}"/>
+            </StackPanel>
+          </Border>
+
+          <!-- Backup Configuration -->
+          <Border BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,10" Background="#252526">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Backup Configuration" FontWeight="SemiBold" FontSize="12"/>
+              <CheckBox Content="Backup old files" IsChecked="{Binding BackupEnabled}"/>
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBox Text="{Binding BackupPath}" Watermark="Backup directory path" Width="300"/>
+                <Button Content="Select folder" Click="OnSelectBackupPath"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Extract Path Configuration -->
+          <Border BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,10" Background="#252526">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Extract Path Configuration" FontWeight="SemiBold" FontSize="12"/>
+              <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <TextBlock Text="Extract selected file" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding ExtractionPath}" Watermark="Extraction directory path" Width="300"/>
+                <Button Content="Select folder" Click="OnSelectExtractionPath"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Stop Services -->
+          <Border BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,10" Background="#252526">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Stop Services" FontWeight="SemiBold" FontSize="12"/>
+              <TextBlock Text="Commands to stop services before update:" FontSize="12"/>
+              <ListBox ItemsSource="{Binding StopServices}" x:Name="StopServicesListBox" Height="100"/>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBox x:Name="NewStopServiceBox" Watermark="New stop command" Width="300"/>
+                <Button Content="+ Add" Click="OnAddStopService"/>
+                <Button Content="− Remove Selected" Click="OnRemoveStopService"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Start Services -->
+          <Border BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="6" Padding="10" Background="#252526">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Start Services" FontWeight="SemiBold" FontSize="12"/>
+              <TextBlock Text="Commands to start services after update:" FontSize="12"/>
+              <ListBox ItemsSource="{Binding StartServices}" x:Name="StartServicesListBox" Height="100"/>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBox x:Name="NewStartServiceBox" Watermark="New start command" Width="300"/>
+                <Button Content="+ Add" Click="OnAddStartService"/>
+                <Button Content="− Remove Selected" Click="OnRemoveStartService"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+
+    <!-- ABOUT TAB -->
+    <TabItem Header="About" Background="#1e1e1e">
+      <ScrollViewer>
+        <Border Background="#252526"
+                BorderBrush="#3c3c3c"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="24"
+                Margin="24">
+          <StackPanel Spacing="12">
+            <TextBlock Text="{Binding AppTitle}"
+                       FontSize="24"
+                       FontWeight="SemiBold"
+                       Foreground="#ffffff"/>
+            <TextBlock Text="{Binding AppDescription}"
+                       TextWrapping="Wrap"
+                       FontSize="13"
+                       Foreground="#d6d6d6"/>
+            <TextBlock Text="{Binding AppVersion, StringFormat='Version: {0}'}"
+                       FontSize="14"
+                       Foreground="#0e639c"/>
+            <TextBlock Text="{Binding AppReleaseDate, StringFormat='Release date: {0}'}"
+                       FontSize="14"
+                       Foreground="#0e639c"/>
+          </StackPanel>
+        </Border>
+      </ScrollViewer>
+    </TabItem>
+
+  </TabControl>
+</Window>
