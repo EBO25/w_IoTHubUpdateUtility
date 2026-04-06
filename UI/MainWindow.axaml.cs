@@ -104,37 +104,6 @@ public partial class MainWindow : Window
         await RunOnUiAsync(() => _vm.ExtractAsync());
     }
 
-    private async void OnSelectDestination(object? sender, RoutedEventArgs e)
-    {
-        if (_pickerOpen)
-            return;
-
-        _pickerOpen = true;
-        try
-        {
-            var folderOptions = new FolderPickerOpenOptions
-            {
-                Title = "Select destination folder"
-            };
-
-            if (!string.IsNullOrEmpty(_vm.DestinationPath) && System.IO.Directory.Exists(_vm.DestinationPath))
-            {
-                folderOptions.SuggestedStartLocation = await StorageProvider.TryGetFolderFromPathAsync(new System.Uri(_vm.DestinationPath));
-            }
-
-            var folder = (await StorageProvider.OpenFolderPickerAsync(folderOptions))?.FirstOrDefault();
-            if (folder is not null)
-            {
-                var uri = folder.Path;
-                if (uri is not null)
-                    _vm.SetDestination(uri.LocalPath ?? uri.ToString());
-            }
-        }
-        finally
-        {
-            _pickerOpen = false;
-        }
-    }
 
     private void OnNewRule(object? sender, RoutedEventArgs e)
     {
@@ -221,10 +190,7 @@ public partial class MainWindow : Window
         await StartTreeNodeDragAsync(sender, e, SourceTreePathFormat);
     }
 
-    private async void OnDestinationTreeNodePointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        await StartTreeNodeDragAsync(sender, e, DestinationTreePathFormat);
-    }
+    // Destination selection removed from UI; method intentionally omitted.
 
     private async void OnSelectBackupPath(object? sender, RoutedEventArgs e)
     {

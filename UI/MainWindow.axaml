@@ -56,6 +56,22 @@
       <Setter Property="BorderBrush" Value="#3c3c3c"/>
       <Setter Property="BorderThickness" Value="2"/>
     </Style>
+    <Style Selector="TreeView ToggleButton">
+      <Setter Property="Foreground" Value="#cccccc"/>
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="TreeViewItem">
+      <Setter Property="Foreground" Value="#cccccc"/>
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="TreeViewItem ToggleButton">
+      <Setter Property="Foreground" Value="#cccccc"/>
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="Foreground" Value="#cccccc"/>
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
     <Style Selector="CheckBox">
       <Setter Property="Foreground" Value="#cccccc"/>
     </Style>
@@ -80,192 +96,207 @@
 
     <!-- HOME TAB -->
     <TabItem Header="Home" Background="#1e1e1e">
-      <DockPanel>
+      <!-- Outer grid: Sidebar | Splitter | Main Container -->
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="300" MinWidth="180"/>
+          <ColumnDefinition Width="3"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- BOTTOM: BUTTONS + LOG -->
-        <Border DockPanel.Dock="Bottom" Background="#1e1e1e" Padding="10,8" BorderBrush="#3c3c3c" BorderThickness="0,1,0,0">
-          <DockPanel>
-
-            <!-- Log terminal -->
-            <Border DockPanel.Dock="Bottom" BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="4" Margin="0,8,0,0" Height="180">
-              <ListBox ItemsSource="{Binding LogLines}"
-                       Background="#1e1e1e"
-                       ScrollViewer.VerticalScrollBarVisibility="Auto"
-                       x:Name="LogListBox">
-                <ListBox.ItemTemplate>
-                  <DataTemplate>
-                    <TextBlock Text="{Binding Message}"
-                               FontFamily="Monospace"
-                               FontSize="12"
-                               Foreground="{Binding Foreground}"/>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-            </Border>
-
-            <!-- Action buttons -->
-            <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="10" DockPanel.Dock="Top">
-              <Button Grid.Column="0" Content="Check upgrade criteria"      Click="OnCheckCriteria" HorizontalAlignment="Stretch"/>
-              <Button Grid.Column="1" Content="Stop services &amp; execute rules" Click="OnStopAndExecute" HorizontalAlignment="Stretch"/>
-              <Button Grid.Column="2" Content="Start system services"       Click="OnStartServices" HorizontalAlignment="Stretch"/>
-              <Button Grid.Column="3" Content="Refresh Folder Tree" Click="OnRefreshFolderTree" HorizontalAlignment="Stretch"/>
-              <Button Grid.Column="4" Content="Clear logs" Click="OnClearLogs" HorizontalAlignment="Stretch"/>
-            </Grid>
-          </DockPanel>
+        <!-- LEFT: Explorer Sidebar (full height) -->
+        <Border Grid.Column="0" Background="#1e1e1e" Padding="8" Margin="8" BorderThickness="0" VerticalAlignment="Stretch">
+          <Border BorderThickness="0" CornerRadius="4" VerticalAlignment="Stretch">
+            <TreeView ItemsSource="{Binding SourceTree}" Background="#252526" VerticalAlignment="Stretch">
+              <TreeView.ItemTemplate>
+                <TreeDataTemplate ItemsSource="{Binding Children}">
+                  <StackPanel Orientation="Horizontal"
+                              Spacing="4"
+                              PointerPressed="OnSourceTreeNodePointerPressed">
+                    <TextBlock Text="{Binding Icon}" FontSize="12"/>
+                    <TextBlock Text="{Binding Name}" Foreground="#cccccc" FontSize="12"/>
+                  </StackPanel>
+                </TreeDataTemplate>
+              </TreeView.ItemTemplate>
+            </TreeView>
+          </Border>
         </Border>
 
-        <!-- MAIN CONTENT: three columns equal distribution -->
-        <Grid ColumnDefinitions="*,*,*" Margin="8" ColumnSpacing="8">
+        <!-- Vertical splitter between Sidebar and Main -->
+        <GridSplitter Grid.Column="1" Width="2" Background="#333333" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" ResizeDirection="Columns"/>
 
-          <!-- LEFT: Source -->
-          <DockPanel Grid.Column="0">
-            <!-- Header -->
-            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,150" ColumnSpacing="10" Margin="0,0,0,8">
-              <TextBox Grid.Column="0"
-                       Text="{Binding SourcePath}"
-                       Watermark="Compressed file or folder path…"
-                       HorizontalAlignment="Stretch"/>
-              <Button Grid.Column="1"
-                      Content="Select source"
-                      Click="OnSelectSource"
-                      Width="150"
-                      HorizontalAlignment="Stretch"/>
-            </Grid>
+        <!-- RIGHT: Main Container (contains header, editor zone, horizontal splitter, panel zone) -->
+        <Grid Grid.Column="2" Margin="8" VerticalAlignment="Stretch">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="3"/>
+              <RowDefinition Height="250"/>
+          </Grid.RowDefinitions>
 
-            <!-- Extract button -->
-            <Border BorderBrush="#3c3c3c"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    MinHeight="420"
-                    VerticalAlignment="Stretch">
-              <TreeView ItemsSource="{Binding SourceTree}" Background="#252526">
-                <TreeView.ItemTemplate>
-                  <TreeDataTemplate ItemsSource="{Binding Children}">
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="4"
-                                PointerPressed="OnSourceTreeNodePointerPressed">
-                      <TextBlock Text="{Binding Icon}" FontSize="12"/>
-                      <TextBlock Text="{Binding Name}" Foreground="#cccccc" FontSize="12"/>
-                    </StackPanel>
-                  </TreeDataTemplate>
-                </TreeView.ItemTemplate>
-              </TreeView>
-            </Border>
-          </DockPanel>
+          <!-- Source Path bar at very top of Main Container -->
+          <Grid Grid.Row="0" ColumnDefinitions="*,150" ColumnSpacing="10" Margin="0,0,0,8">
+            <TextBox Grid.Column="0"
+                     Text="{Binding SourcePath}"
+                     Watermark="Compressed file or folder path…"
+                     HorizontalAlignment="Stretch"/>
+            <Button Grid.Column="1"
+                    Content="Select source"
+                    Click="OnSelectSource"
+                    Width="150"
+                    HorizontalAlignment="Stretch"/>
+          </Grid>
 
-          <!-- CENTRE: Rules -->
-          <DockPanel Grid.Column="1">
-            <Grid DockPanel.Dock="Top" Height="32" Margin="0,0,0,8">
-              <TextBlock Text="Rules List:"
-                         FontWeight="SemiBold"
-                         Foreground="#006BB8"
-                         FontSize="13"
-                         VerticalAlignment="Center"/>
-            </Grid>
+          <!-- Editor Zone (Top): Rules List (left) and Script (right) with vertical splitter -->
+          <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="3"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- Rules ListBox -->
-            <Border DockPanel.Dock="Top" BorderBrush="#3c3c3c" BorderThickness="1" CornerRadius="4" Height="250">
-              <ListBox ItemsSource="{Binding Rules}"
-                       x:Name="RulesListBox"
-                       Background="#252526"
-                       ScrollViewer.VerticalScrollBarVisibility="Auto">
-                <ListBox.ItemTemplate>
-                  <DataTemplate>
-                    <StackPanel Spacing="3" Margin="4">
-                      <TextBlock Text="{Binding Name}"      FontWeight="SemiBold" Foreground="#cccccc" FontSize="12"/>
-                      <TextBlock Text="{Binding Operation}" Foreground="#999"     FontSize="11"/>
-                      <TextBlock Text="{Binding SourceRelativePath, StringFormat='src: {0}'}"
-                                 Foreground="#777" FontSize="10"/>
-                      <TextBlock Text="{Binding DestinationRelativePath, StringFormat='dst: {0}'}"
-                                 Foreground="#777" FontSize="10"/>
-                    </StackPanel>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-            </Border>
+            <!-- Rules column -->
+            <DockPanel Grid.Column="0" Margin="0,0,8,0">
+              <Grid DockPanel.Dock="Top" Margin="0,0,0,8" VerticalAlignment="Top">
+                <TextBlock Text="Rules List:"
+                           FontWeight="SemiBold"
+                           Foreground="#006BB8"
+                           FontSize="13"
+                           VerticalAlignment="Top"/>
+              </Grid>
 
-            <!-- Rule actions -->
-            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,8,0,8">
-              <Button Content="New"    Click="OnNewRule"    Width="90" MinWidth="90"/>
-              <Button Content="Edit"   Click="OnEditRule"   Width="90" MinWidth="90"/>
-              <Button Content="Save"   Click="OnSaveRule"   Width="90" MinWidth="90"/>
-              <Button Content="Delete" Click="OnDeleteRule" Width="90" MinWidth="90"/>
-            </StackPanel>
+              <Border DockPanel.Dock="Top" BorderThickness="0" CornerRadius="4" Height="250" VerticalAlignment="Top">
+                <ListBox ItemsSource="{Binding Rules}"
+                         x:Name="RulesListBox"
+                         Background="#252526"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Spacing="3" Margin="4">
+                        <TextBlock Text="{Binding Name}"      FontWeight="SemiBold" Foreground="#cccccc" FontSize="12"/>
+                        <TextBlock Text="{Binding Operation}" Foreground="#999"     FontSize="11"/>
+                        <TextBlock Text="{Binding SourceRelativePath, StringFormat='src: {0}'}"
+                                   Foreground="#777" FontSize="10"/>
+                        <TextBlock Text="{Binding DestinationRelativePath, StringFormat='dst: {0}'}"
+                                   Foreground="#777" FontSize="10"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Border>
 
-            <!-- Rule editor (simple inline form for selected rule) -->
-            <ScrollViewer>
-              <StackPanel Spacing="6" x:Name="RuleEditor" IsVisible="True" IsEnabled="False">
-                <TextBlock x:Name="RuleEditorHint" Text="Select a rule and click Edit, or click New." Foreground="#666" FontSize="11"/>
-                <TextBox x:Name="RuleNameBox"    Watermark="Name"                 LostFocus="OnRuleFieldChanged"/>
-                <TextBox x:Name="RuleSrcBox"
-                         Watermark="Source relative path"
-                         LostFocus="OnRuleFieldChanged"
-                         DragDrop.AllowDrop="True"
-                         DragDrop.DragOver="OnRuleSourcePathDragOver"
-                         DragDrop.Drop="OnRuleSourcePathDrop"/>
-                <TextBox x:Name="RuleDstBox"
-                         Watermark="Dest relative path"
-                         LostFocus="OnRuleFieldChanged"
-                         DragDrop.AllowDrop="True"
-                         DragDrop.DragOver="OnRuleDestinationPathDragOver"
-                         DragDrop.Drop="OnRuleDestinationPathDrop"/>
-                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                  <CheckBox x:Name="RulePermsCheckBox"
-                            Content="Apply"
-                            Checked="OnRulePermissionsChanged"
-                            Unchecked="OnRulePermissionsChanged"/>
-                  <TextBlock x:Name="RulePermsLabel"
-                             Text="{Binding Permissions}"
-                             VerticalAlignment="Center"
-                             Foreground="#999"/>
-                </StackPanel>
-                <ComboBox x:Name="RuleOpBox" Width="180" SelectionChanged="OnRuleOpChanged">
-                  <ComboBoxItem Content="RecursiveCopy"/>
-                  <ComboBoxItem Content="FilesOnly"/>
-                  <ComboBoxItem Content="ReplaceFile"/>
-                </ComboBox>
+              <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,8,0,8">
+                <Button Content="New"    Click="OnNewRule"    Width="90" MinWidth="90"/>
+                <Button Content="Edit"   Click="OnEditRule"   Width="90" MinWidth="90"/>
+                <Button Content="Save"   Click="OnSaveRule"   Width="90" MinWidth="90"/>
+                <Button Content="Delete" Click="OnDeleteRule" Width="90" MinWidth="90"/>
               </StackPanel>
-            </ScrollViewer>
-          </DockPanel>
 
-          <!-- RIGHT: Destination -->
-          <DockPanel Grid.Column="2">
-            <!-- Header -->
-            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,150" ColumnSpacing="10" Margin="0,0,0,8">
-              <TextBox Grid.Column="0"
-                       Text="{Binding DestinationPath}"
-                       Watermark="/home/pi/"
-                       HorizontalAlignment="Stretch"/>
-              <Button Grid.Column="1"
-                      Content="Select destination"
-                      Click="OnSelectDestination"
-                      Width="150"
-                      HorizontalAlignment="Stretch"/>
+              <ScrollViewer>
+                <StackPanel Spacing="6" x:Name="RuleEditor" IsVisible="True" IsEnabled="False">
+                  <TextBlock x:Name="RuleEditorHint" Text="Select a rule and click Edit, or click New." Foreground="#666" FontSize="11"/>
+                  <TextBox x:Name="RuleNameBox"    Watermark="Name"                 LostFocus="OnRuleFieldChanged"/>
+                  <TextBox x:Name="RuleSrcBox"
+                           Watermark="Source relative path"
+                           LostFocus="OnRuleFieldChanged"
+                           DragDrop.AllowDrop="True"
+                           DragDrop.DragOver="OnRuleSourcePathDragOver"
+                           DragDrop.Drop="OnRuleSourcePathDrop"/>
+                  <TextBox x:Name="RuleDstBox"
+                           Watermark="Dest relative path"
+                           LostFocus="OnRuleFieldChanged"
+                           DragDrop.AllowDrop="True"
+                           DragDrop.DragOver="OnRuleDestinationPathDragOver"
+                           DragDrop.Drop="OnRuleDestinationPathDrop"/>
+                  <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <CheckBox x:Name="RulePermsCheckBox"
+                              Content="Apply"
+                              Checked="OnRulePermissionsChanged"
+                              Unchecked="OnRulePermissionsChanged"/>
+                    <TextBlock x:Name="RulePermsLabel"
+                               Text="{Binding Permissions}"
+                               VerticalAlignment="Center"
+                               Foreground="#999"/>
+                  </StackPanel>
+                  <ComboBox x:Name="RuleOpBox" Width="180" SelectionChanged="OnRuleOpChanged">
+                    <ComboBoxItem Content="RecursiveCopy"/>
+                    <ComboBoxItem Content="FilesOnly"/>
+                    <ComboBoxItem Content="ReplaceFile"/>
+                  </ComboBox>
+                </StackPanel>
+              </ScrollViewer>
+            </DockPanel>
+
+            <!-- Vertical splitter between Rules and Script -->
+            <GridSplitter Grid.Column="1" Width="2" Background="#333333" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" ResizeDirection="Columns"/>
+
+            <!-- Script column -->
+            <DockPanel Grid.Column="2" Margin="8,0,0,0">
+              <Grid DockPanel.Dock="Top" ColumnDefinitions="*" Margin="0,0,0,8" VerticalAlignment="Top">
+                <TextBlock Text="Script"
+                           FontWeight="SemiBold"
+                           Foreground="#006BB8"
+                           FontSize="13"
+                           VerticalAlignment="Top"/>
+              </Grid>
+
+                    <Border BorderThickness="0"
+                      CornerRadius="4"
+                      MinHeight="420"
+                      VerticalAlignment="Top">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                  <TextBox Text="{Binding ScriptText, Mode=TwoWay}"
+                           AcceptsReturn="True"
+                           TextWrapping="Wrap"
+                           FontFamily="Monospace"
+                           Background="#252526"
+                           Foreground="#e6e6e6"
+                           Padding="8"
+                           />
+                </ScrollViewer>
+              </Border>
+            </DockPanel>
+          </Grid>
+
+          <!-- Horizontal splitter between Editor Zone and Panel Zone -->
+          <GridSplitter Grid.Row="2" Height="2" Background="#333333" HorizontalAlignment="Stretch" VerticalAlignment="Center" ShowsPreview="True" ResizeDirection="Rows"/>
+
+          <!-- Panel Zone (Bottom): Buttons row pinned at top, Log Console below -->
+          <Border Grid.Row="3" Background="#1e1e1e" Padding="10,8" BorderThickness="0" Margin="0,8,0,0">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
+
+              <Grid Grid.Row="0" ColumnDefinitions="*,*,*,*,*" ColumnSpacing="10" HorizontalAlignment="Left">
+                <Button Grid.Column="0" Content="Check upgrade criteria"      Click="OnCheckCriteria" HorizontalAlignment="Stretch"/>
+                <Button Grid.Column="1" Content="Stop services &amp; execute rules" Click="OnStopAndExecute" HorizontalAlignment="Stretch"/>
+                <Button Grid.Column="2" Content="Start system services"       Click="OnStartServices" HorizontalAlignment="Stretch"/>
+                <Button Grid.Column="3" Content="Refresh Folder Tree" Click="OnRefreshFolderTree" HorizontalAlignment="Stretch"/>
+                <Button Grid.Column="4" Content="Clear logs" Click="OnClearLogs" HorizontalAlignment="Stretch"/>
+              </Grid>
+
+              <Border Grid.Row="1" BorderThickness="0" CornerRadius="4" Margin="0,8,0,0">
+                <ListBox ItemsSource="{Binding LogLines}"
+                         Background="#1e1e1e"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         x:Name="LogListBox">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Message}"
+                                 FontFamily="Monospace"
+                                 FontSize="12"
+                                 Foreground="{Binding Foreground}"/>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Border>
             </Grid>
-
-            <!-- Destination tree -->
-            <Border BorderBrush="#3c3c3c"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    MinHeight="420"
-                    VerticalAlignment="Stretch">
-              <TreeView ItemsSource="{Binding DestinationTree}" Background="#252526">
-                <TreeView.ItemTemplate>
-                  <TreeDataTemplate ItemsSource="{Binding Children}">
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="4"
-                                PointerPressed="OnDestinationTreeNodePointerPressed">
-                      <TextBlock Text="{Binding Icon}" FontSize="12"/>
-                      <TextBlock Text="{Binding Name}" Foreground="#cccccc" FontSize="12"/>
-                    </StackPanel>
-                  </TreeDataTemplate>
-                </TreeView.ItemTemplate>
-              </TreeView>
-            </Border>
-          </DockPanel>
+          </Border>
 
         </Grid>
-      </DockPanel>
+      </Grid>
     </TabItem>
 
     <!-- SETTINGS TAB -->

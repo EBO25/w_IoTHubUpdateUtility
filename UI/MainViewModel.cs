@@ -116,6 +116,14 @@ public class MainViewModel : INotifyPropertyChanged
     // Log lines bound to the terminal TextBox
     public ObservableCollection<LogEntry> LogLines { get; } = new();
 
+    // Script text shown in the right-hand Script editor
+    private string _scriptText = string.Empty;
+    public string ScriptText
+    {
+        get => _scriptText;
+        set { _scriptText = value; OnPropertyChanged(); }
+    }
+
     // ── Internal state ────────────────────────────────────────────────────────
 
     private SourceInfo? _currentSource;

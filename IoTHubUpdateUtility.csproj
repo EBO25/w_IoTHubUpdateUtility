@@ -12,6 +12,16 @@
     <Description>Desktop utility for validating and applying IoT Hub update packages on Linux devices.</Description>
   </PropertyGroup>
 
+  <!-- Windows build -->
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- Linux build -->
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.0" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
